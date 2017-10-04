@@ -65,8 +65,13 @@ export async function fetchRoute(dep, dest) {
   let departure = await fetchCoordinates(dep);
   let destination = await fetchCoordinates(dest);
   console.log("Dep response:", departure, "Dest response:", destination);
-  departure = departure.Response.View[0].Result[0].Location.DisplayPosition;
-  destination = destination.Response.View[0].Result[0].Location.DisplayPosition;
+  try {
+    departure = departure.Response.View[0].Result[0].Location.DisplayPosition;
+    destination =
+      destination.Response.View[0].Result[0].Location.DisplayPosition;
+  } catch (error) {
+    handleError(error);
+  }
 
   const uri = window.encodeURI(
     `https://route.cit.api.here.com/routing/7.2/calculateroute.json?app_id=${APP_ID}&app_code=${APP_CODE}&waypoint0=geo!${departure.Latitude},${departure.Longitude}&waypoint1=geo!${destination.Latitude},${destination.Longitude}&departure=now&mode=fastest;publicTransport&combineChange=true`
