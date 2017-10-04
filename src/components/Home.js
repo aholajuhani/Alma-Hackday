@@ -7,18 +7,30 @@ export default class Home extends Component {
       departure: "Pohjois-Haaga",
       destination: "Eira",
       time: "",
-      distance: ""
+      distance: "",
+      directions: []
     };
   }
 
   async updateStates() {
     let route = await fetchRoute(this.state.departure, this.state.destination);
-    let time = route.response.route[0].summary.travelTime;
-    let distance = route.response.route[0].summary.distance;
-    this.setState({
-      time: (time / 60).toFixed(0),
-      distance: (distance / 1000).toFixed(1)
-    });
+    console.log(route);
+    try {
+      let time = route.response.route[0].summary.travelTime;
+      let distance = route.response.route[0].summary.distance;
+      let directions = route.response.route[0].leg[0].maneuver;
+      console.log(directions);
+      this.setState({
+        time: (time / 60).toFixed(0),
+        distance: (distance / 1000).toFixed(1),
+        directions: directions.map(direction => {
+          return direction;
+        })
+      });
+    } catch (error) {
+      console.warn(error);
+      return null;
+    }
   }
 
   handleSubmit = event => {
@@ -50,7 +62,7 @@ export default class Home extends Component {
               type="text"
               required
               className="form-control"
-              placeholder="Pohjois-Haaga"
+              placeholder="Address, City, Country"
             />
           </div>
           <div className="form-group col-xs-2">
@@ -62,7 +74,7 @@ export default class Home extends Component {
               type="text"
               required
               className="form-control"
-              placeholder="Eira"
+              placeholder="Address, City, Country"
             />
           </div>
           <div className="input-group">
@@ -72,9 +84,25 @@ export default class Home extends Component {
           </div>
         </form>
         <div className="summary">
-          The trip from {this.state.departure} to {this.state.destination} is{" "}
-          {this.state.distance}km and takes about {this.state.time}mins
+          {this.state.time && this.state.distance ? (
+            <h3>
+              The trip from {this.state.departure} to {this.state.destination}{" "}
+              is {this.state.distance}km and takes about {this.state.time}mins
+            </h3>
+          ) : (
+            <h1 />
+          )}
         </div>
+        <ul>
+          {this.state.directions.map(direction => {
+            return (
+              <li
+                key={direction.id}
+                dangerouslySetInnerHTML={{ __html: direction.instruction }}
+              />
+            );
+          })}
+        </ul>
       </div>
     );
   }
