@@ -16,14 +16,22 @@ export default class Home extends Component {
 
   async updateStates() {
     let route = await fetchRoute(this.state.departure, this.state.destination);
-    console.log(route);
+    console.log("Route", route);
     try {
       let time = route.response.route[0].summary.travelTime;
       let distance = route.response.route[0].summary.distance;
       let directions = route.response.route[0].leg[0].maneuver;
-      console.log(directions);
-      let array = {};
-      let datapoints = directions.map((data, index) => {});
+      console.log("Directions:", directions);
+      let array = [];
+      directions.map((data, index) => {
+        array.push({
+          angle: Number((data.travelTime / 60).toFixed(0)) || 1,
+          //radius: Number((data.travelTime / 60).toFixed(0)) || 1,
+          label: `${index + 1}. ${(data.travelTime / 60).toFixed(0)} mins`
+        });
+      });
+
+      console.log("Array", array);
 
       this.setState({
         time: (time / 60).toFixed(0),
@@ -31,7 +39,7 @@ export default class Home extends Component {
         directions: directions.map(direction => {
           return direction;
         }),
-        data: 1
+        data: array
       });
     } catch (error) {
       console.warn(error);
@@ -66,6 +74,7 @@ export default class Home extends Component {
       time,
       distance
     } = this.state;
+
     return (
       <div>
         <h2>Transit App</h2>
@@ -103,8 +112,8 @@ export default class Home extends Component {
         <div className="summary">
           {time && distance ? (
             <h3>
-              The trip from {this.state.departure} to {this.state.destination}{" "}
-              is {this.state.distance}km and takes about {this.state.time}mins
+              The trip from {departure} to {destination} is {distance}km and
+              takes about {time}mins
             </h3>
           ) : (
             <h1>Loading...</h1>
@@ -121,6 +130,7 @@ export default class Home extends Component {
           })}
         </ol>
         <div className="chart">
+          <h3>Time estimation per step</h3>
           {data.length > 1 ? <Vis data={data} /> : <h1 />}
         </div>
       </div>
